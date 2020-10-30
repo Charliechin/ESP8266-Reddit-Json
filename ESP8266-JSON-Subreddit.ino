@@ -200,6 +200,7 @@ void loop()
     // Sanitize the string
     answer.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
     Serial.println(answer);
+    Serial.println("===========================");    
     return answer;
   }
 
@@ -209,8 +210,8 @@ void loop()
     int next_end = quote.indexOf(", \"", next_start);
     String nextOuija = quote.substring(next_start + 9, next_end);
     nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-    Serial.print("about to exit the function, next: ");
-    Serial.println(nextOuija);
+//    Serial.print("about to exit the function, next: ");
+//    Serial.println(nextOuija);
     
     n = nextOuija;
     return nextOuija;
