@@ -15,8 +15,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // OLED stuff
 
 
-char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
-char password[] = "MKNJPQPK";   // your network key
+char ssid[] = "<YOUR_WIFI_SSID_NAME>"; // your network SSID (name)
+char password[] = "<YOUR_WIFI_PASSWORD>";   // your network key
 String static n = "";
 String static title = "";
 String static answer = "";
