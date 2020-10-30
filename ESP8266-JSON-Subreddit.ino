@@ -14,9 +14,9 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // OLED stuff
 
-//------- Replace the following! ------
-char ssid[] = "<YOUR_WIFI_NAME_HERE>"; // your network SSID (name)
-char password[] = "<YOUR_WIFI_PASSWORD_HERE>";   // your network key
+
+char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
+char password[] = "MKNJPQPK";   // your network key
 String static n = "";
 String static title = "";
 String static answer = "";
@@ -48,13 +48,13 @@ void setup()
   printText(ssid, 10, 30);
   Serial.println(ssid);
   WiFi.begin(ssid, password);
-      int i = 10;
+  int posX = 10;
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
-    printText("......", i, 50);
+    printText("......", posX, 50);
     delay(500);
-    i = i+3;
+    posX = posX+3;
   }
   Serial.println("");
   Serial.println("WiFi connected");
