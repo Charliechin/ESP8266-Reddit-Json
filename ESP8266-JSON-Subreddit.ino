@@ -1,38 +1,25 @@
-
-
-/*******************************************************************
-    A sample project for making a HTTP/HTTPS GET request on an ESP8266
-
-    It will connect to the given request and print the body to
-    serial monitor
-
-    Parts:
-    D1 Mini ESP8266 * - http://s.click.aliexpress.com/e/uzFUnIe
-
- *  * = Affilate
-
-    If you find what I do usefuland would like to support me,
-    please consider becoming a sponsor on Github
-    https://github.com/sponsors/witnessmenow/
-
-
-    Written by Brian Lough
-    YouTube: https://www.youtube.com/brianlough
-    Tindie: https://www.tindie.com/stores/brianlough/
-    Twitter: https://twitter.com/witnessmenow
- *******************************************************************/
-
-// ----------------------------
-// Standard Libraries
-// ----------------------------
-
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
+// OLED stuff
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+// OLED stuff
 
 //------- Replace the following! ------
 char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
 char password[] = "MKNJPQPK";   // your network key
 String static n = "";
+String static title = "";
+String static answer = "";
 // For Non-HTTPS requests
 // WiFiClient client;
 
@@ -49,7 +36,7 @@ void setup()
 {
 
   Serial.begin(115200);
-
+  initScreen();
   // Connect to the WiFI
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -115,8 +102,50 @@ void handleResponse()
     return;
   }
 }
+
+void printText(String text, int x, int y)
+{
+  // Coords for Questions: 10,0
+  // Coords for Answers: 10, 50
+  // display.clearDisplay();
+  display.setTextSize(1); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(x, y);
+  display.println(text);
+  display.display(); // Show initial text
+  delay(100);
+}
+
+void scrollText(String q, String a)
+{
+  display.clearDisplay();
+
+  display.setTextSize(1); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 0);
+  display.println(q);
+  display.display(); // Show initial text
+  delay(100);
+
+  // Scroll in various directions, pausing in-between:
+  display.startscrollright(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrollleft(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrolldiagright(0x00, 0x07);
+  delay(2000);
+  display.startscrolldiagleft(0x00, 0x07);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+}
+
 String makeHTTPRequest(String next)
- // Returns a String next with the value of the next page of the current post
+// Returns a String next with the value of the next page of the current post
 {
   String path = "/r/askOuija/top.json?limit=1&after=";
   String url = path + next;
@@ -128,12 +157,11 @@ String makeHTTPRequest(String next)
     return "Connection Failed";
   }
   // give the esp a breather
-//  Serial.print("entering makeHTTPRequest, next is: ");
-//  Serial.println(next);
+  //  Serial.print("entering makeHTTPRequest, next is: ");
+  //  Serial.println(next);
 
-//  Serial.print("url: ");
-//  Serial.println(url);
-  
+  //  Serial.print("url: ");
+  //  Serial.println(url);
 
   yield();
   // Send HTTP request
@@ -142,8 +170,6 @@ String makeHTTPRequest(String next)
   client.print(url);
   addHeaders();
   handleResponse();
-
-
 
   String quote;
 
@@ -160,8 +186,6 @@ String makeHTTPRequest(String next)
   writeAnswer(quote);
 
   getNext(quote);
-
-
 }
 
 void loop()
@@ -169,50 +193,85 @@ void loop()
   int i = 0;
   String current = "";
   String next = "";
-  
-  while (i < 3) {
-    makeHTTPRequest(n);
 
+  while (i < 100)
+  {
+    makeHTTPRequest(n);
+    display.clearDisplay();
+    printText(title, 10, 0);
+    delay(1000);
+    printText(answer, 10, 44);
 
     i++;
-    delay(8000);
+    delay(1000);
   }
- }
+}
 
+String writeTitle(String quote)
+{
+  int ouija_title_start = quote.indexOf("\"title\"");
+  int ouija_title_end = quote.indexOf(", \"", ouija_title_start + 1); // we start the search from the position where "title" is
+  String _title = quote.substring(ouija_title_start + 9, ouija_title_end);
+  // Sanitize the string
+  title.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+  Serial.println(_title);
+  Serial.println(" ");
 
+  title = _title;
 
+  return title;
+}
 
-  String writeTitle(String quote) {
-    int ouija_title_start = quote.indexOf("\"title\"");
-    int ouija_title_end = quote.indexOf(", \"", ouija_title_start + 1); // we start the search from the position where "title" is
-    String title = quote.substring(ouija_title_start + 9, ouija_title_end);
-    // Sanitize the string
-    title.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-    Serial.println(title);
-    Serial.println(" ");
-    return title;
+String writeAnswer(String quote)
+{
+  int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
+  int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
+  String _answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
+  // Sanitize the string
+  answer.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+  Serial.println(_answer);
+  Serial.println("===========================");
+  answer = _answer;
+  return answer;
+}
+
+String getNext(String quote)
+{
+
+  int next_start = quote.indexOf("\"after\"");
+  int next_end = quote.indexOf(", \"", next_start);
+  String nextOuija = quote.substring(next_start + 9, next_end);
+  nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+                                  //    Serial.print("about to exit the function, next: ");
+                                  //    Serial.println(nextOuija);
+
+  n = nextOuija;
+  return nextOuija;
+}
+
+void initScreen()
+{
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;)
+      ; // Don't proceed, loop forever
   }
 
-  String writeAnswer(String quote) {
-    int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
-    int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
-    String answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
-    // Sanitize the string
-    answer.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-    Serial.println(answer);
-    Serial.println("===========================");    
-    return answer;
-  }
+  // Show initial display buffer contents on the screen --
+  // the library initializes this with an Adafruit splash screen.
+  display.display();
+  delay(1000); // Pause for 2 seconds
 
-  String getNext(String quote) {
-    
-    int next_start = quote.indexOf("\"after\"");
-    int next_end = quote.indexOf(", \"", next_start);
-    String nextOuija = quote.substring(next_start + 9, next_end);
-    nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-//    Serial.print("about to exit the function, next: ");
-//    Serial.println(nextOuija);
-    
-    n = nextOuija;
-    return nextOuija;
-  }
+  // Clear the buffer
+  display.clearDisplay();
+
+  // Draw a single pixel in white
+  display.drawPixel(10, 10, SSD1306_WHITE);
+
+  // Show the display buffer on the screen. You MUST call display() after
+  // drawing commands to make them visible on screen!
+  display.display();
+  delay(2000);
+}
