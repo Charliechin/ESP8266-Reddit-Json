@@ -32,7 +32,7 @@
 //------- Replace the following! ------
 char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
 char password[] = "MKNJPQPK";   // your network key
-String peo = "peo";
+String nextOuija = "";
 
 // For Non-HTTPS requests
 // WiFiClient client;
@@ -79,7 +79,7 @@ void setup()
   // If you want to check the fingerprint
   //  client.setFingerprint(TEST_HOST_FINGERPRINT);
 
-  makeHTTPRequest();
+  nextOuija = "";
 }
 
 void addHeaders()
@@ -118,45 +118,37 @@ void handleResponse()
     return;
   }
 }
-void makeHTTPRequest()
- 
+String makeHTTPRequest(String next)
+ // Returns a String next with the value of the next page of the current post
 {
+  String path = "/r/askOuija/top.json?limit=1&after=";
+  String url = path + next;
   // Opening connection to server (Use 80 as port if HTTP)
   if (!client.connect(TEST_HOST, 443))
   {
     Serial.println(F("Connection failed"));
-    return;
+    return "Connection Failed";
   }
   // give the esp a breather
+  Serial.print("entering makeHTTPRequest, next is: ");
+  Serial.println(next);
+
+  Serial.print("url: ");
+  Serial.println(url);
+  
+
   yield();
   // Send HTTP request
   client.print(F("GET "));
   // This is the second half of a request (everything that comes after the base URL)
-  client.print("/r/askOuija/top.json?limit=1");
+  client.print(url);
   addHeaders();
   handleResponse();
 
-  // This is probably not needed for most, but I had issues
-  // with the Tindie api where sometimes there were random
-  // characters coming back before the body of the response.
-  // This will cause no hard to leave it in
-  // peek() will look at the character, but not take it off the queue
-  while (client.available() && client.peek() != '{')
-  {
-    char c = 0;
-    client.readBytes(&c, 1);
-    Serial.print(c);
-    Serial.println("BAD");
-  }
+
 
   String quote;
-  // While the client is still availble read each
-  // byte and print to the serial monitor
-  //  while (client.available()) {
-  //    char c = 0;
-  //    client.readBytes(&c, 1);
-  //    Serial.print(c);
-  //  }
+
   while (client.connected())
   {
     if (client.available())
@@ -186,10 +178,22 @@ void makeHTTPRequest()
   int next_end = quote.indexOf(", \"", next_start);
   String nextOuija = quote.substring(next_start + 9, next_end);
   nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-  Serial.println("next: ");
+  Serial.print("about to exit the function, next: ");
   Serial.println(nextOuija);
+  return nextOuija;
 }
 
 void loop()
 {
-}
+  int i = 0;
+  
+  while (i < 100) {
+    Serial.print("loop ");
+    Serial.println(i);
+    Serial.println(nextOuija);
+  
+    makeHTTPRequest(nextOuija);
+    i++;
+    delay(8000);
+  }
+ }
