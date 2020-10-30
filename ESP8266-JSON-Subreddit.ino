@@ -32,8 +32,7 @@
 //------- Replace the following! ------
 char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
 char password[] = "MKNJPQPK";   // your network key
-String nextOuija = "";
-
+String static n = "";
 // For Non-HTTPS requests
 // WiFiClient client;
 
@@ -78,8 +77,6 @@ void setup()
 
   // If you want to check the fingerprint
   //  client.setFingerprint(TEST_HOST_FINGERPRINT);
-
-  nextOuija = "";
 }
 
 void addHeaders()
@@ -123,6 +120,7 @@ String makeHTTPRequest(String next)
 {
   String path = "/r/askOuija/top.json?limit=1&after=";
   String url = path + next;
+  url.replace("\"", ""); // gets rid of escaped quotes in the text ('\"')
   // Opening connection to server (Use 80 as port if HTTP)
   if (!client.connect(TEST_HOST, 443))
   {
@@ -130,11 +128,11 @@ String makeHTTPRequest(String next)
     return "Connection Failed";
   }
   // give the esp a breather
-  Serial.print("entering makeHTTPRequest, next is: ");
-  Serial.println(next);
+//  Serial.print("entering makeHTTPRequest, next is: ");
+//  Serial.println(next);
 
-  Serial.print("url: ");
-  Serial.println(url);
+//  Serial.print("url: ");
+//  Serial.println(url);
   
 
   yield();
@@ -158,42 +156,62 @@ String makeHTTPRequest(String next)
     }
   }
   client.stop();
+  writeTitle(quote);
+  writeAnswer(quote);
 
-  int ouija_title_start = quote.indexOf("\"title\"");
-  int ouija_title_end = quote.indexOf(", \"", ouija_title_start + 1); // we start the search from the position where "title" is
-  String ouijaTitle = quote.substring(ouija_title_start + 9, ouija_title_end);
-  // Sanitize the string
-  ouijaTitle.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-  Serial.println(ouijaTitle);
-  Serial.println(" ");
+  getNext(quote);
 
-  int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
-  int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
-  String ouijaFlair = quote.substring(ouija_flair_start + 19, ouija_flair_end);
-  // Sanitize the string
-  ouijaFlair.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-  Serial.println(ouijaFlair);
 
-  int next_start = quote.indexOf("\"after\"");
-  int next_end = quote.indexOf(", \"", next_start);
-  String nextOuija = quote.substring(next_start + 9, next_end);
-  nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
-  Serial.print("about to exit the function, next: ");
-  Serial.println(nextOuija);
-  return nextOuija;
 }
 
 void loop()
 {
   int i = 0;
+  String current = "";
+  String next = "";
   
-  while (i < 100) {
-    Serial.print("loop ");
-    Serial.println(i);
-    Serial.println(nextOuija);
-  
-    makeHTTPRequest(nextOuija);
+  while (i < 3) {
+    makeHTTPRequest(n);
+
+
     i++;
     delay(8000);
   }
  }
+
+
+
+
+  String writeTitle(String quote) {
+    int ouija_title_start = quote.indexOf("\"title\"");
+    int ouija_title_end = quote.indexOf(", \"", ouija_title_start + 1); // we start the search from the position where "title" is
+    String title = quote.substring(ouija_title_start + 9, ouija_title_end);
+    // Sanitize the string
+    title.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+    Serial.println(title);
+    Serial.println(" ");
+    return title;
+  }
+
+  String writeAnswer(String quote) {
+    int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
+    int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
+    String answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
+    // Sanitize the string
+    answer.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+    Serial.println(answer);
+    return answer;
+  }
+
+  String getNext(String quote) {
+    
+    int next_start = quote.indexOf("\"after\"");
+    int next_end = quote.indexOf(", \"", next_start);
+    String nextOuija = quote.substring(next_start + 9, next_end);
+    nextOuija.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+    Serial.print("about to exit the function, next: ");
+    Serial.println(nextOuija);
+    
+    n = nextOuija;
+    return nextOuija;
+  }
