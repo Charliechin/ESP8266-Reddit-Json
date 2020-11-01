@@ -14,12 +14,14 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // OLED stuff
 
-
-char ssid[] = "<YOUR_WIFI_SSID_NAME>"; // your network SSID (name)
-char password[] = "<YOUR_WIFI_PASSWORD>";   // your network key
+char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
+char password[] = "MKNJPQPK";   // your network key
 String static n = "";
-String static title = "";
-String static answer = "";
+String static title = "title: Init val";
+String static answer = "ans: Init val";
+String static path = "/r/askOuija/top.json?limit=1&after=";
+int static xPosLoading = 5;
+bool has_answer = false;
 // For Non-HTTPS requests
 // WiFiClient client;
 
@@ -29,7 +31,7 @@ WiFiClientSecure client;
 // Just the base of the URL you want to connect to
 #define TEST_HOST "www.reddit.com"
 
-// OPTIONAL - The finferprint of the site you want to connect to.
+// OPTIONAL - The finferprint of the site you want to connect/ to.
 #define TEST_HOST_FINGERPRINT "DB E9 D5 FE EB EF 68 34 55 FD 62 BA C9 BB 04 D4 E3 22 18 81"
 
 void setup()
@@ -52,9 +54,9 @@ void setup()
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
-    printText("......", posX, 50);
+    printText("...", posX, 50);
     delay(500);
-    posX = posX+3;
+    posX = posX + 3;
   }
   Serial.println("");
   Serial.println("WiFi connected");
@@ -65,6 +67,7 @@ void setup()
   //--------
 
   // If you don't need to check the fingerprint
+  display.clearDisplay();
   client.setInsecure();
 
   // If you want to check the fingerprint
@@ -152,7 +155,7 @@ void scrollText(String q, String a)
 String makeHTTPRequest(String next)
 // Returns a String next with the value of the next page of the current post
 {
-  String path = "/r/askOuija/top.json?limit=1&after=";
+  // String path = "/r/askOuija/new.json?limit=1&after=";
   String url = path + next;
   url.replace("\"", ""); // gets rid of escaped quotes in the text ('\"')
   // Opening connection to server (Use 80 as port if HTTP)
@@ -162,57 +165,70 @@ String makeHTTPRequest(String next)
     return "Connection Failed";
   }
   // give the esp a breather
-  //  Serial.print("entering makeHTTPRequest, next is: ");
-  //  Serial.println(next);
-
-  //  Serial.print("url: ");
-  //  Serial.println(url);
-
   yield();
   // Send HTTP request
   client.print(F("GET "));
-  // This is the second half of a request (everything that comes after the base URL)
   client.print(url);
   addHeaders();
   handleResponse();
 
   String quote;
+  String _answer;
+  int loadingDotXpos;
 
   while (client.connected())
   {
     if (client.available())
     {
       quote = client.readString();
-      break;
+      Serial.print("Fetching answer: ");
+      _answer = getAnswer(quote);
+
+      if (_answer.indexOf("unanswered") > 0 || _answer == "null")
+      {
+        Serial.println("This one has no answer");
+        has_answer = false;
+        break;
+      }
+      else
+      {
+        has_answer = true;
+        Serial.println("This one has answer");
+        break;
+      }
     }
   }
-  client.stop();
-  writeTitle(quote);
-  writeAnswer(quote);
 
+  client.stop();
+  getTitle(quote);
+  getAnswer(quote);
   getNext(quote);
 }
 
 void loop()
 {
-  int i = 0;
-  String current = "";
   String next = "";
 
-  while (i < 100)
+  makeHTTPRequest(n);
+
+  if (has_answer)
   {
-    makeHTTPRequest(n);
     display.clearDisplay();
     printText(title, 10, 0);
     delay(1000);
-    printText(answer, 10, 44);
-
-    i++;
+    printText(answer, 2, 44);
     delay(1000);
+    xPosLoading = 5;
+  }
+  else
+  {
+    Serial.println("no answer");
+    printText(".", xPosLoading, 55);
+    xPosLoading = xPosLoading + 3;
   }
 }
 
-String writeTitle(String quote)
+String getTitle(String quote)
 {
   int ouija_title_start = quote.indexOf("\"title\"");
   int ouija_title_end = quote.indexOf(", \"", ouija_title_start + 1); // we start the search from the position where "title" is
@@ -227,7 +243,7 @@ String writeTitle(String quote)
   return title;
 }
 
-String writeAnswer(String quote)
+String getAnswer(String quote)
 {
   int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
   int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
@@ -273,10 +289,10 @@ void initScreen()
   display.clearDisplay();
 
   // Draw a single pixel in white
-  display.drawPixel(10, 10, SSD1306_WHITE);
+  // display.drawPixel(10, 10, SSD1306_WHITE);
 
   // Show the display buffer on the screen. You MUST call display() after
   // drawing commands to make them visible on screen!
   display.display();
-  delay(2000);
+  delay(1000);
 }
