@@ -5,7 +5,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Fonts/FreeSansBold9pt7b.h>
+#include <Fonts/FreeSerifItalic9pt7b.h>
+
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -174,11 +175,17 @@ void loop()
   if (has_answer)
   {
     display.clearDisplay();
-    printText(title, 10, 0);
+    display.setFont();
+    printText(title, 5, 2);
     delay(1000);
-    printText(answer, 2, 44);
-    delay(1000);
+    printText("Ouija", 28, 35);
+    delay(400);
+    printText("says: ", 65, 35);
+    delay(1250);
+    display.setFont(&FreeSerifItalic9pt7b);
+    printText(answer, 1, 60);
     xPosLoading = 5;
+    delay(1000);
   }
   else
   {
@@ -206,10 +213,9 @@ String getTitle(String quote)
 String getAnswer(String quote)
 {
   int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
-  int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "title" is
-  String _answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
-  // Sanitize the string
-  answer.replace("\\\"", "'"); // gets rid of escaped quotes in the text ('\"')
+  int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "link_flair_text" is
+  // was ouija_flair_start + 19: "Ouija says: "
+  String _answer = quote.substring(ouija_flair_start + 31, ouija_flair_end - 1);
   Serial.println(_answer);
   Serial.println("===========================");
   answer = _answer;
