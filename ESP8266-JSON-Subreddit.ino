@@ -178,14 +178,14 @@ void loop()
     display.setFont();
     printText(title, 5, 2);
     delay(1000);
-    printText("Ouija", 28, 35);
+    printText("Ouija", 28, 38);
     delay(400);
-    printText("says: ", 65, 35);
+    printText("says: ", 65, 38);
     delay(1250);
     display.setFont(&FreeSerifItalic9pt7b);
-    printText(answer, 1, 60);
+    printText(answer, 1, 63);
     xPosLoading = 5;
-    delay(1000);
+    delay(800);
   }
   else
   {
@@ -233,6 +233,8 @@ String getNext(String quote)
                                   //    Serial.println(nextOuija);
 
   n = nextOuija;
+  Serial.print("Next: ");
+  Serial.println(n);
   return nextOuija;
 }
 
