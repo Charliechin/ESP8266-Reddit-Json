@@ -17,7 +17,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 char ssid[] = "TALKTALK9707C8"; // your network SSID (name)
 char password[] = "MKNJPQPK";   // your network key
-String static n = "";
+String static n = "t3_jm7zjn";
 String static title = "title: Init val";
 String static answer = "ans: Init val";
 String static path = "/r/askOuija/top.json?limit=1&after=";
@@ -142,26 +142,29 @@ String makeHTTPRequest(String next)
 
   String quote;
   String _answer;
-  int loadingDotXpos;
 
   while (client.connected())
   {
     if (client.available())
     {
       quote = client.readString();
-      Serial.print("Fetching answer: ");
+      Serial.println("Fetching answer: ");
       _answer = getAnswer(quote, has_answer);
+      Serial.println(_answer);
 
       if (_answer.indexOf("unanswered") > 0 || _answer == "null")
       {
-        Serial.println("This one has no answer");
+        Serial.print("This one has no answer");
+        Serial.println(_answer);
         has_answer = false;
         break;
       }
       else
       {
         has_answer = true;
-        Serial.println("This one has answer");
+        // Serial.println("This one has answer");
+        Serial.print("This one has answer: ");
+        Serial.println(_answer);
         break;
       }
     }
@@ -230,7 +233,10 @@ String getAnswer(String quote, bool has_answer)
   else
   {
     _answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
+    Serial.print("Has NOT answer, _answer is: ");
+    Serial.println(_answer);
   }
+
   //ojete ojeteeeeee
   //ojete ojeteeeeee
   //ojete ojeteeeeee
@@ -239,6 +245,10 @@ String getAnswer(String quote, bool has_answer)
   Serial.println(_answer);
   Serial.println("===========================");
   answer = _answer;
+  if (answer == ",")
+  {
+    return "null";
+  }
   return answer;
 }
 
