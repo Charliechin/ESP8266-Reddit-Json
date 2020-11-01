@@ -143,7 +143,7 @@ String makeHTTPRequest(String next)
     {
       quote = client.readString();
       Serial.print("Fetching answer: ");
-      _answer = getAnswer(quote);
+      _answer = getAnswer(quote, has_answer);
 
       if (_answer.indexOf("unanswered") > 0 || _answer == "null")
       {
@@ -162,7 +162,7 @@ String makeHTTPRequest(String next)
 
   client.stop();
   getTitle(quote);
-  getAnswer(quote);
+  getAnswer(quote, has_answer);
   getNext(quote);
 }
 
@@ -181,7 +181,7 @@ void loop()
     printText("Ouija", 26, 38);
     delay(400);
     printText("says: ", 63, 38);
-    delay(1250);
+    delay(600);
     display.setFont(&FreeSerifItalic9pt7b);
     printText(answer, 1, 63);
     xPosLoading = 5;
@@ -210,12 +210,25 @@ String getTitle(String quote)
   return title;
 }
 
-String getAnswer(String quote)
+String getAnswer(String quote, bool has_answer)
 {
   int ouija_flair_start = quote.indexOf("\"link_flair_text\"");
   int ouija_flair_end = quote.indexOf(", \"", ouija_flair_start + 1); // we start the search from the position where "link_flair_text" is
+  String _answer;
   // was ouija_flair_start + 19: "Ouija says: "
-  String _answer = quote.substring(ouija_flair_start + 31, ouija_flair_end - 1);
+  if (has_answer)
+  {
+    _answer = quote.substring(ouija_flair_start + 32, ouija_flair_end - 1);
+  }
+  else
+  {
+    _answer = quote.substring(ouija_flair_start + 19, ouija_flair_end);
+  }
+  //ojete ojeteeeeee
+  //ojete ojeteeeeee
+  //ojete ojeteeeeee
+  //ojete ojeteeeeee
+  //ojete ojeteeeeee
   Serial.println(_answer);
   Serial.println("===========================");
   answer = _answer;
@@ -276,7 +289,7 @@ void printText(String text, int x, int y)
   display.setCursor(x, y);
   display.println(text);
   display.display(); // Show initial text
-  delay(100);
+  // delay(100);
 }
 
 void scrollText(String q, String a)
