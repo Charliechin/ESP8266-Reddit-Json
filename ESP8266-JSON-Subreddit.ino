@@ -190,7 +190,7 @@ void loop()
     printText("says: ", 63, 38);
     delay(600);
     display.setFont(&FreeSerifItalic9pt7b);
-    printText(answer, 1, 63);
+    printText("\"" + answer, 1, 63);
     xPosLoading = 5;
     // delay(800);
   }
@@ -225,7 +225,7 @@ String getAnswer(String quote, bool has_answer)
   // was ouija_flair_start + 19: "Ouija says: "
   if (has_answer)
   {
-    _answer = quote.substring(ouija_flair_start + 32, ouija_flair_end - 1);
+    _answer = quote.substring(ouija_flair_start + 32, ouija_flair_end);
   }
   else
   {
