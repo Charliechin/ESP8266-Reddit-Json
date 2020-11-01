@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
+#include <Fonts/FreeSansBold9pt7b.h>
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -45,6 +45,7 @@ void setup()
   delay(100);
 
   // Attempt to connect to Wifi network:
+  // display.setFont(&FreeMonoBold12pt7b);
   printText("Connecting to: ", 10, 0);
   Serial.print("Connecting Wifi: ");
   printText(ssid, 10, 30);
@@ -109,47 +110,6 @@ void handleResponse()
     Serial.println(F("Invalid response"));
     return;
   }
-}
-
-void printText(String text, int x, int y)
-{
-  // Coords for Questions: 10,0
-  // Coords for Answers: 10, 50
-  // display.clearDisplay();
-  display.setTextSize(1); // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(x, y);
-  display.println(text);
-  display.display(); // Show initial text
-  delay(100);
-}
-
-void scrollText(String q, String a)
-{
-  display.clearDisplay();
-
-  display.setTextSize(1); // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(10, 0);
-  display.println(q);
-  display.display(); // Show initial text
-  delay(100);
-
-  // Scroll in various directions, pausing in-between:
-  display.startscrollright(0x00, 0x0F);
-  delay(2000);
-  display.stopscroll();
-  delay(1000);
-  display.startscrollleft(0x00, 0x0F);
-  delay(2000);
-  display.stopscroll();
-  delay(1000);
-  display.startscrolldiagright(0x00, 0x07);
-  delay(2000);
-  display.startscrolldiagleft(0x00, 0x07);
-  delay(2000);
-  display.stopscroll();
-  delay(1000);
 }
 
 String makeHTTPRequest(String next)
@@ -294,5 +254,47 @@ void initScreen()
   // Show the display buffer on the screen. You MUST call display() after
   // drawing commands to make them visible on screen!
   display.display();
+  delay(1000);
+}
+// TEXT FUNCTIONS
+
+void printText(String text, int x, int y)
+{
+  // Coords for Questions: 10,0
+  // Coords for Answers: 10, 50
+  // display.clearDisplay();
+  display.setTextSize(1); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(x, y);
+  display.println(text);
+  display.display(); // Show initial text
+  delay(100);
+}
+
+void scrollText(String q, String a)
+{
+  display.clearDisplay();
+
+  display.setTextSize(1); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 0);
+  display.println(q);
+  display.display(); // Show initial text
+  delay(100);
+
+  // Scroll in various directions, pausing in-between:
+  display.startscrollright(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrollleft(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrolldiagright(0x00, 0x07);
+  delay(2000);
+  display.startscrolldiagleft(0x00, 0x07);
+  delay(2000);
+  display.stopscroll();
   delay(1000);
 }
