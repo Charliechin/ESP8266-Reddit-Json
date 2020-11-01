@@ -56,12 +56,19 @@ void setup()
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
-    printText("...", posX, 50);
-    delay(500);
-    posX = posX + 3;
+    printText("....", posX, 50);
+    posX = posX + 1;
+    if (posX > 50)
+    {
+      posX = 10;
+      display.clearDisplay();
+    }
   }
+  display.clearDisplay();
   Serial.println("");
   Serial.println("WiFi connected");
+  printText("Wifi connected", 10, 0);
+  printText("Fetching Reddit", 10, 30);
   Serial.println("IP address: ");
   IPAddress ip = WiFi.localIP();
   Serial.println(ip);
@@ -69,11 +76,11 @@ void setup()
   //--------
 
   // If you don't need to check the fingerprint
-  display.clearDisplay();
   client.setInsecure();
 
   // If you want to check the fingerprint
   //  client.setFingerprint(TEST_HOST_FINGERPRINT);
+  display.clearDisplay();
 }
 
 void addHeaders()
