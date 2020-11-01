@@ -178,14 +178,14 @@ void loop()
     display.setFont();
     printText(title, 5, 2);
     delay(1000);
-    printText("Ouija", 28, 38);
+    printText("Ouija", 26, 38);
     delay(400);
-    printText("says: ", 65, 38);
+    printText("says: ", 63, 38);
     delay(1250);
     display.setFont(&FreeSerifItalic9pt7b);
     printText(answer, 1, 63);
     xPosLoading = 5;
-    delay(800);
+    // delay(800);
   }
   else
   {
