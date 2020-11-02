@@ -23,7 +23,18 @@ If the post has an answer, it displays on a generic OLED screen (in this case, w
 the title of the post and the answer.
 
 If the post has no response, we send a new GET request to proceed to repeat the previous step;
-for every post with no response found, dots are painted on the screen at the bottom of the screen, to let you know that the ESP8266 is fetching new data. 
+for every post with no response found, dots are painted on the screen at the bottom of the screen, to let you know that the ESP8266 is fetching new data.
+
+## Screen Setup
+Sketch pinout
+
+| OLED | ESP8266 |
+| ------ | ------ |
+| GND | GND |
+| VCC | 3v3 |
+| SCL | D1 |
+| SDA | D2 |
+
 
 ## How to make it work?
 
